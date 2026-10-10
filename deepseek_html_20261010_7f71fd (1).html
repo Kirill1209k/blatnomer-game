@@ -1,0 +1,2833 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Блатные Номера: Симулятор Перекупа</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: #05070a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 6px;
+    overflow: hidden;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 430px;
+    height: 880px;
+    max-height: 98vh;
+    background: linear-gradient(145deg, #0a0e14 0%, #05070a 100%);
+    border-radius: 32px;
+    box-shadow:
+        0 0 60px rgba(0, 255, 255, 0.15),
+        0 0 30px rgba(255, 0, 255, 0.1),
+        inset 0 0 40px rgba(0, 0, 0, 0.9);
+    border: 1px solid #1a2a3a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    color: #e0f0ff;
+}
+
+/* ============ AUTH SCREEN ============ */
+.auth-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(145deg, #0a0e14 0%, #05070a 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 22px;
+    z-index: 500;
+    border-radius: 32px;
+    overflow-y: auto;
+}
+
+.auth-screen.hidden { display: none; }
+
+.auth-logo {
+    font-size: 26px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #00ffc3, #00aaff, #ff00cc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(0, 255, 200, 0.5);
+    margin-bottom: 6px;
+    text-align: center;
+    letter-spacing: 2px;
+    animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+    0%, 100% { filter: drop-shadow(0 0 15px rgba(0, 255, 200, 0.6)); }
+    50% { filter: drop-shadow(0 0 35px rgba(0, 200, 255, 0.9)); }
+}
+
+.auth-sub {
+    color: #4a7a8a;
+    font-size: 12px;
+    margin-bottom: 24px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.auth-toggle {
+    display: flex;
+    width: 100%;
+    background: #0a141e;
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 14px;
+    border: 1px solid #1a2a3a;
+}
+
+.auth-toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #4a7a8a;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.auth-toggle-btn.active {
+    background: #0f2a3a;
+    color: #aae0ff;
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
+    text-shadow: 0 0 8px #00ccff;
+}
+
+.auth-form { width: 100%; display: flex; flex-direction: column; }
+
+.auth-input {
+    width: 100%;
+    background: #0a141e;
+    border: 1px solid #1e3a4a;
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: #c0e0ff;
+    font-size: 15px;
+    margin-bottom: 10px;
+    outline: none;
+    transition: all 0.3s;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.auth-input:focus {
+    border-color: #00ccff;
+    box-shadow: 0 0 20px rgba(0, 200, 255, 0.3), inset 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.auth-input::placeholder { color: #3a5a6a; }
+
+.auth-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #0a3a5a, #0a1a2a);
+    border: 1px solid #00aaff;
+    border-radius: 14px;
+    padding: 14px;
+    color: #aae0ff;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+    margin-bottom: 8px;
+}
+
+.auth-btn:active { transform: scale(0.97); box-shadow: 0 0 35px rgba(0, 200, 255, 0.5); }
+
+.auth-btn.register {
+    background: linear-gradient(135deg, #1a3a2a, #0a1f0f);
+    border-color: #00ff88;
+    color: #aaffcc;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+}
+
+.auth-error {
+    color: #ff5566;
+    font-size: 13px;
+    margin-bottom: 10px;
+    min-height: 18px;
+    text-align: center;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(255, 50, 80, 0.5);
+}
+
+.auth-reset {
+    color: #6a4a4a;
+    font-size: 11px;
+    cursor: pointer;
+    margin-top: 16px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #3a2a2a;
+    background: #0a0a0e;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.auth-reset:active { background: #2a1a1a; color: #ff8888; box-shadow: 0 0 15px rgba(255, 80, 80, 0.4); }
+
+/* ============ HEADER ============ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(5, 10, 18, 0.95);
+    border-bottom: 1px solid #1a2a3a;
+    box-shadow: 0 4px 20px rgba(0, 255, 255, 0.08);
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.user-info { display: flex; flex-direction: column; gap: 2px; }
+
+.username-display {
+    font-size: 12px;
+    font-weight: 700;
+    color: #00ffc3;
+    text-shadow: 0 0 10px rgba(0, 255, 195, 0.5);
+}
+
+.balance-box { display: flex; flex-direction: column; }
+
+.balance-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #5f9ea0;
+    text-transform: uppercase;
+}
+
+.balance-value {
+    font-size: 19px;
+    font-weight: 800;
+    color: #aaffdd;
+    text-shadow: 0 0 15px #00ffc3;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.level-box { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+
+.level-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #0a1a24;
+    padding: 3px 12px;
+    border-radius: 20px;
+    border: 1px solid #1e4a5a;
+    box-shadow: inset 0 0 8px #000, 0 0 12px rgba(0, 150, 200, 0.2);
+}
+
+.level-row span:first-child { color: #5a8a9a; font-size: 10px; font-weight: 600; }
+.level-row span:last-child { color: #aad4ff; font-weight: 800; font-size: 15px; }
+
+.xp-bar-bg {
+    width: 100%;
+    height: 4px;
+    background: #0a141e;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ffc3, #00aaff);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px #00ffc3;
+}
+
+.progress-text { font-size: 9px; color: #4a7a8a; text-align: center; letter-spacing: 0.5px; }
+
+/* ============ MAIN ============ */
+.main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 14px 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.main-panel::-webkit-scrollbar { display: none; }
+
+.buffs-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    min-height: 0;
+}
+
+.buff-badge {
+    background: #0a1a24;
+    border: 1px solid #4a8a9a;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #aae0ff;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 0 10px rgba(0, 200, 255, 0.2);
+    animation: buffGlow 2s infinite;
+}
+
+@keyframes buffGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(0, 200, 255, 0.2); }
+    50% { box-shadow: 0 0 18px rgba(0, 200, 255, 0.5); }
+}
+
+/* TYPE SWITCHER */
+.type-switcher {
+    display: flex;
+    gap: 3px;
+    margin-bottom: 8px;
+    background: #0a121c;
+    border-radius: 14px;
+    padding: 4px;
+    border: 1px solid #1a2a3a;
+    flex-shrink: 0;
+}
+
+.type-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #4a7a8a;
+    padding: 8px 1px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    position: relative;
+}
+
+.type-btn.active {
+    background: #0f2a3a;
+    color: #aae0ff;
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
+    border: 1px solid #1e5a6a;
+}
+
+.type-btn.locked { opacity: 0.5; }
+.type-btn .lock-icon { font-size: 8px; display: block; }
+
+/* REGION SELECTOR */
+.region-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.region-selector-label {
+    font-size: 11px;
+    color: #5a8a9a;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.region-select {
+    flex: 1;
+    background: #0a141e;
+    border: 1px solid #1e3a4a;
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #c0e0ff;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.region-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ============ PLATE (GOST STYLE) ============ */
+.plate-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0 8px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.plate-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    border-radius: 12px;
+    padding: 3px;
+    background: linear-gradient(135deg, #555, #333);
+    transition: all 0.3s;
+}
+
+.plate-wrapper.rarity-common { background: linear-gradient(135deg, #555, #333); }
+.plate-wrapper.rarity-rare {
+    background: linear-gradient(135deg, #00ccff, #0088cc);
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.5);
+    animation: neonPulseCyan 2s infinite;
+}
+.plate-wrapper.rarity-epic {
+    background: linear-gradient(135deg, #aa00ff, #6600cc);
+    box-shadow: 0 0 25px rgba(170, 0, 255, 0.5);
+    animation: neonPulsePurple 2s infinite;
+}
+.plate-wrapper.rarity-legend {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.7);
+    animation: neonPulseGold 1.2s infinite;
+}
+.plate-wrapper.rarity-gov {
+    background: linear-gradient(135deg, #ff0000, #aa0000);
+    box-shadow: 0 0 35px rgba(255, 0, 0, 0.7);
+    animation: neonPulseRed 0.8s infinite;
+}
+
+@keyframes neonPulseCyan {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 200, 255, 0.4); }
+    50% { box-shadow: 0 0 40px rgba(0, 200, 255, 0.8); }
+}
+@keyframes neonPulsePurple {
+    0%, 100% { box-shadow: 0 0 20px rgba(170, 0, 255, 0.4); }
+    50% { box-shadow: 0 0 40px rgba(170, 0, 255, 0.8); }
+}
+@keyframes neonPulseGold {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); transform: scale(1); }
+    50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.9); transform: scale(1.01); }
+}
+@keyframes neonPulseRed {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 0, 0, 0.5); }
+    50% { box-shadow: 0 0 50px rgba(255, 0, 0, 0.9); }
+}
+
+/* REALISTIC PLATE */
+.real-plate {
+    width: 100%;
+    height: 74px;
+    background: #ffffff;
+    border: 2px solid #111;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px 0 6px;
+    position: relative;
+    box-shadow: inset 0 0 0 1px #ffffff, inset 0 0 0 2px #111;
+    font-family: 'Arial Black', 'Impact', 'Segoe UI Black', sans-serif;
+    overflow: hidden;
+}
+
+.real-plate.type-moto { height: 74px; border-radius: 4px; }
+
+.real-plate.type-spec {
+    background: #111111;
+    border-color: #eeeeee;
+    box-shadow: inset 0 0 0 1px #111111, inset 0 0 0 2px #eeeeee;
+}
+.real-plate.type-spec .char { color: #eeeeee; }
+.real-plate.type-spec .region-num { color: #eeeeee; }
+
+.real-plate.type-police {
+    background: #0a3a6a;
+    border-color: #ffffff;
+    box-shadow: inset 0 0 0 1px #0a3a6a, inset 0 0 0 2px #ffffff;
+}
+.real-plate.type-police .char { color: #ffffff; }
+.real-plate.type-police .region-num { color: #ffffff; }
+
+.real-plate.type-diplomat {
+    background: #cc0000;
+    border-color: #ffcc00;
+    box-shadow: inset 0 0 0 1px #cc0000, inset 0 0 0 2px #ffcc00;
+}
+.real-plate.type-diplomat .char { color: #ffffff; }
+.real-plate.type-diplomat .region-num { color: #ffffff; }
+
+.plate-chars {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex: 1;
+    justify-content: center;
+    height: 100%;
+}
+
+/* SLOT MACHINE */
+.slot {
+    width: 30px;
+    height: 54px;
+    overflow: hidden;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.slot .reel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    will-change: transform;
+}
+
+.slot .reel .char {
+    height: 54px;
+    line-height: 54px;
+    text-align: center;
+    font-size: 38px;
+    font-weight: 900;
+    font-family: 'Arial Black', 'Impact', 'Segoe UI Black', sans-serif;
+    flex-shrink: 0;
+    width: 100%;
+    color: #111;
+    letter-spacing: 0;
+}
+
+.slot .reel .char.empty {
+    color: transparent;
+}
+
+/* Region box */
+.region-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding-left: 6px;
+    border-left: 2px solid #111;
+    min-width: 68px;
+    position: relative;
+}
+
+.real-plate.type-spec .region-box { border-left-color: #eeeeee; }
+.real-plate.type-police .region-box { border-left-color: #ffffff; }
+.real-plate.type-diplomat .region-box { border-left-color: #ffcc00; }
+
+.region-num {
+    font-size: 22px;
+    font-weight: 900;
+    color: #111;
+    line-height: 1;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 1px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.region-flag-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 16px;
+}
+
+.flag {
+    width: 22px;
+    height: 14px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #999;
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.flag .f-white { flex: 1; background: #fff; }
+.flag .f-blue { flex: 1; background: #0039a6; }
+.flag .f-red { flex: 1; background: #d52b1e; }
+
+.rus-text {
+    font-size: 10px;
+    font-weight: 700;
+    color: #111;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.real-plate.type-spec .rus-text { color: #eeeeee; }
+.real-plate.type-police .rus-text { color: #ffffff; }
+.real-plate.type-diplomat .rus-text { color: #ffffff; }
+
+/* RARITY INFO */
+.rarity-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 350px;
+    margin-top: 6px;
+    background: #0a141e;
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid #1a3a4a;
+    box-shadow: inset 0 0 10px #000, 0 0 15px rgba(0, 150, 200, 0.15);
+}
+
+.rarity-text { font-size: 15px; font-weight: 700; color: #b0e0ff; }
+.rarity-text.legend { color: #ffd966; text-shadow: 0 0 15px #ffaa00; }
+.rarity-text.gov { color: #ff4444; text-shadow: 0 0 15px #ff0000; }
+.rarity-text.epic { color: #cc88ff; text-shadow: 0 0 12px #aa00ff; }
+.rarity-text.rare { color: #66ddff; text-shadow: 0 0 12px #00aaff; }
+
+.price-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: #aaffaa;
+    text-shadow: 0 0 12px #00ff88;
+}
+
+/* CONTROLS */
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    margin: 10px 0 8px;
+    flex-shrink: 0;
+}
+
+.ctrl-btn {
+    background: linear-gradient(145deg, #0f1e2a, #0a121c);
+    border: 1px solid #1e5a6a;
+    border-radius: 22px;
+    padding: 12px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #b0e0ff;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    box-shadow: 0 5px 0 #030a10, 0 7px 18px #000, 0 0 15px rgba(0, 150, 200, 0.2);
+    transition: all 0.08s ease;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ctrl-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #030a10, 0 4px 12px #000, 0 0 25px rgba(0, 200, 255, 0.5);
+}
+
+.ctrl-btn:disabled {
+    opacity: 0.35;
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 #030a10;
+    pointer-events: none;
+    filter: grayscale(0.7);
+}
+
+.ctrl-btn.primary {
+    background: linear-gradient(145deg, #0a3a4a, #061e2a);
+    border-color: #4ac0d0;
+    color: #ffffff;
+    box-shadow: 0 5px 0 #030a10, 0 7px 18px #000, 0 0 20px rgba(0, 200, 200, 0.35);
+}
+
+.ctrl-btn.garage-btn {
+    background: linear-gradient(145deg, #3a2a0a, #1f1505);
+    border-color: #c0a05a;
+    color: #ffe0a0;
+    box-shadow: 0 5px 0 #030a10, 0 7px 18px #000, 0 0 20px rgba(200, 150, 0, 0.3);
+}
+
+.ctrl-btn.gov-btn {
+    background: linear-gradient(145deg, #4a1a1a, #2a0a0a);
+    border-color: #c05a5a;
+    color: #ffd0d0;
+    box-shadow: 0 5px 0 #030a10, 0 7px 18px #000, 0 0 20px rgba(200, 50, 50, 0.3);
+    grid-column: span 2;
+}
+
+/* BOTTOM TABS */
+.bottom-tabs {
+    display: flex;
+    background: #0a121c;
+    border-top: 2px solid #1a2a3a;
+    box-shadow: 0 -8px 20px rgba(0, 255, 255, 0.1);
+    padding: 4px 4px 6px;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #3a5a6a;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 8px 1px;
+    border-radius: 18px;
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid transparent;
+}
+
+.tab-btn.active {
+    background: #0f2a3a;
+    color: #aae0ff;
+    border-color: #1e6a7a;
+    box-shadow: 0 0 20px rgba(0, 150, 200, 0.3), inset 0 0 10px #0a1a2a;
+    text-shadow: 0 0 8px #00ccff;
+}
+
+.tab-icon { font-size: 18px; }
+
+/* MODAL */
+.modal-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+    border-radius: 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+.modal-content {
+    background: #0a121c;
+    width: 92%;
+    max-width: 360px;
+    max-height: 80%;
+    border-radius: 24px;
+    border: 1px solid #1e5a6a;
+    box-shadow: 0 0 40px rgba(0, 200, 255, 0.3), inset 0 0 20px #000;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    color: #d0eaff;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 18px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #aae0ff;
+    text-shadow: 0 0 10px #00aaff;
+    border-bottom: 1px solid #1a3a4a;
+    padding-bottom: 10px;
+}
+
+.close-btn {
+    background: #2a1010;
+    border: 1px solid #aa4a4a;
+    color: #ff8a8a;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.close-btn:active { transform: scale(0.9); box-shadow: 0 0 15px #ff0000; }
+
+.modal-list {
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+.modal-list::-webkit-scrollbar { width: 4px; }
+.modal-list::-webkit-scrollbar-thumb { background: #1e5a6a; border-radius: 4px; }
+
+.modal-item {
+    background: #0a141e;
+    border: 1px solid #1a3a4a;
+    border-radius: 16px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.item-desc { font-weight: 600; color: #b0d0e0; }
+.item-price { color: #aaffaa; font-weight: 700; }
+
+.buy-btn {
+    background: #1a4a2a;
+    border: 1px solid #4a9a4a;
+    color: #c0ffc0;
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.15s;
+    font-size: 11px;
+}
+
+.buy-btn:active { background: #2a6a3a; box-shadow: 0 0 15px #00ff88; }
+.buy-btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* GARAGE GRID */
+.garage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.garage-item {
+    background: #0a141e;
+    border: 2px solid #1a3a4a;
+    border-radius: 14px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.garage-item.rarity-rare { border-color: #00ccff; box-shadow: 0 0 15px rgba(0, 200, 255, 0.3); }
+.garage-item.rarity-epic { border-color: #aa00ff; box-shadow: 0 0 15px rgba(170, 0, 255, 0.3); }
+.garage-item.rarity-legend { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+.garage-item.rarity-gov { border-color: #ff0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+
+.garage-plate-mini {
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    font-size: 12px;
+    color: #fff;
+    background: #222;
+    padding: 4px 6px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.garage-item .item-meta { font-size: 10px; color: #5a8a9a; }
+.garage-item .item-price-small { color: #aaffaa; font-weight: 700; font-size: 12px; }
+
+.garage-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.auction-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #3a1a4a, #1a0a2a);
+    border: 1px solid #aa4aff;
+    color: #ddbbff;
+    border-radius: 10px;
+    padding: 6px 4px;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.auction-btn:active { box-shadow: 0 0 20px #aa4aff; transform: scale(0.95); }
+
+.market-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #1a3a4a, #0a1a2a);
+    border: 1px solid #4aaaff;
+    color: #aaddff;
+    border-radius: 10px;
+    padding: 6px 4px;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.market-btn:active { box-shadow: 0 0 20px #4aaaff; transform: scale(0.95); }
+
+/* ONLINE MARKET */
+.market-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    background: #0a121c;
+    border-radius: 12px;
+    padding: 3px;
+    border: 1px solid #1a2a3a;
+}
+
+.market-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #4a7a8a;
+    padding: 8px 4px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.market-tab.active {
+    background: #0f2a3a;
+    color: #aae0ff;
+    box-shadow: 0 0 12px rgba(0, 170, 255, 0.3);
+}
+
+.search-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.search-input {
+    flex: 1;
+    background: #0a141e;
+    border: 1px solid #1e3a4a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #c0e0ff;
+    font-size: 13px;
+    outline: none;
+}
+
+.search-input::placeholder { color: #3a5a6a; }
+
+.search-input:focus {
+    border-color: #00ccff;
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
+}
+
+.market-listings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.market-listing {
+    background: #0a141e;
+    border: 1px solid #1a3a4a;
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.market-listing.my-listing {
+    border-color: #ffaa00;
+    box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+    animation: listingPulseGold 1.5s infinite;
+}
+
+@keyframes listingPulseGold {
+    0%, 100% { box-shadow: 0 0 10px rgba(255, 170, 0, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(255, 170, 0, 0.6); }
+}
+
+.listing-seller {
+    color: #00ffc3;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.listing-plate {
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    color: #fff;
+    background: #222;
+    padding: 3px 8px;
+    border-radius: 5px;
+    letter-spacing: 1px;
+    margin: 3px 0;
+    display: inline-block;
+}
+
+.listing-price {
+    color: #aaffaa;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.listing-buy-btn {
+    background: linear-gradient(135deg, #0a3a6a, #0a1a3a);
+    border: 1px solid #4aaaff;
+    color: #aaddff;
+    border-radius: 14px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.listing-buy-btn:active { box-shadow: 0 0 20px #4aaaff; transform: scale(0.95); }
+
+/* CHAT NOTIFICATIONS */
+.chat-notification {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+    border: 1px solid #4aff4a;
+    color: #aaffaa;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+    z-index: 700;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+}
+
+.chat-notification.show {
+    opacity: 1;
+    animation: chatSlide 0.5s ease;
+}
+
+@keyframes chatSlide {
+    0% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+    100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* PRICE INPUT MODAL */
+.price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.price-input-group label {
+    color: #5a8a9a;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.price-input-group input {
+    background: #0a141e;
+    border: 2px solid #1e3a4a;
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: #aaffaa;
+    font-size: 22px;
+    font-weight: 800;
+    outline: none;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.price-input-group input:focus {
+    border-color: #00ccff;
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.4);
+}
+
+.listing-fee-info {
+    background: #0a1a1a;
+    border: 1px solid #1a4a4a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #5a8a9a;
+    text-align: center;
+}
+
+.listing-fee-info .fee-amount {
+    color: #ffd966;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+/* AUCTION OVERLAY */
+.auction-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 400;
+    border-radius: 32px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.auction-overlay.active { opacity: 1; pointer-events: auto; }
+
+.auction-spinner {
+    width: 70px;
+    height: 70px;
+    border: 4px solid #1a3a4a;
+    border-top: 4px solid #00ffc3;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px rgba(0, 255, 195, 0.4);
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.auction-timer {
+    font-size: 48px;
+    font-weight: 900;
+    color: #00ffc3;
+    text-shadow: 0 0 30px #00ffc3;
+    margin-bottom: 10px;
+}
+
+.auction-text {
+    color: #aae0ff;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.auction-result {
+    font-size: 22px;
+    font-weight: 800;
+    margin-top: 15px;
+    color: #aaffaa;
+    text-shadow: 0 0 20px #00ff88;
+}
+
+/* ADMIN */
+.admin-input {
+    width: 100%;
+    background: #0a141e;
+    border: 1px solid #1e3a4a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: #c0e0ff;
+    font-size: 14px;
+    margin-bottom: 8px;
+    outline: none;
+}
+
+.admin-input:focus { border-color: #00ccff; box-shadow: 0 0 15px rgba(0, 200, 255, 0.3); }
+
+.admin-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.admin-row .admin-input { flex: 1; margin-bottom: 0; }
+
+.admin-action-btn {
+    background: #1a2a3a;
+    border: 1px solid #3a6a7a;
+    color: #aae0ff;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.admin-action-btn:active { background: #2a4a5a; box-shadow: 0 0 15px #00aaff; }
+.admin-action-btn.danger { border-color: #aa3a3a; color: #ffaaaa; }
+.admin-action-btn.success { border-color: #3aaa5a; color: #aaffaa; }
+
+/* TOAST */
+.toast {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #0a1a2a;
+    border: 1px solid #00aaff;
+    color: #d0f0ff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 0 30px rgba(0, 170, 255, 0.4);
+    z-index: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    white-space: nowrap;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* CONFETTI */
+.confetti-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 550;
+    overflow: hidden;
+    border-radius: 32px;
+}
+
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: confettiFall 2.5s linear forwards;
+}
+
+@keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(850px) rotate(720deg); opacity: 0; }
+}
+
+/* LEVELUP FLASH */
+.levelup-flash {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle, rgba(0, 255, 195, 0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 450;
+    opacity: 0;
+    transition: opacity 0.5s;
+    border-radius: 32px;
+}
+
+.levelup-flash.active { opacity: 1; }
+
+/* CONFIRM MODAL */
+.confirm-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid;
+    transition: all 0.2s;
+}
+
+.confirm-btn.yes {
+    background: #1a4a2a;
+    border-color: #4a9a4a;
+    color: #c0ffc0;
+}
+
+.confirm-btn.no {
+    background: #4a1a1a;
+    border-color: #9a4a4a;
+    color: #ffc0c0;
+}
+
+.confirm-btn:active { transform: scale(0.96); }
+
+/* EMPTY SLOT VISIBILITY */
+.char-placeholder {
+    color: #ddd;
+    opacity: 0.3;
+}
+</style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+
+    <!-- AUTH SCREEN -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-logo">БЛАТНЫЕ НОМЕРА</div>
+        <div class="auth-sub">Симулятор Перекупа</div>
+
+        <div class="auth-toggle">
+            <button class="auth-toggle-btn active" id="toggleLoginBtn">Вход</button>
+            <button class="auth-toggle-btn" id="toggleRegisterBtn">Регистрация</button>
+        </div>
+
+        <div class="auth-form" id="loginForm">
+            <input type="text" class="auth-input" id="loginUsername" placeholder="Логин" autocomplete="off">
+            <input type="password" class="auth-input" id="loginPassword" placeholder="Пароль" autocomplete="off">
+            <div class="auth-error" id="loginError"></div>
+            <button class="auth-btn" id="loginSubmitBtn">Войти</button>
+        </div>
+
+        <div class="auth-form" id="registerForm" style="display:none;">
+            <input type="text" class="auth-input" id="registerUsername" placeholder="Придумайте логин" autocomplete="off">
+            <input type="password" class="auth-input" id="registerPassword" placeholder="Придумайте пароль" autocomplete="off">
+            <input type="password" class="auth-input" id="registerPasswordConfirm" placeholder="Повторите пароль" autocomplete="off">
+            <div class="auth-error" id="registerError"></div>
+            <button class="auth-btn register" id="registerSubmitBtn">Создать аккаунт</button>
+        </div>
+
+        <button class="auth-reset" id="clearStorageBtn">🧹 Сбросить память</button>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="user-info">
+            <span class="username-display" id="usernameDisplay">Гость</span>
+            <div class="balance-box">
+                <span class="balance-label">Баланс</span>
+                <span class="balance-value" id="balanceDisplay">5 000 ₽</span>
+            </div>
+        </div>
+        <div class="level-box">
+            <div class="level-row">
+                <span>LVL</span>
+                <span id="levelDisplay">1</span>
+            </div>
+            <div class="xp-bar-bg">
+                <div class="xp-bar-fill" id="xpBarFill" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="xpText">0/100 XP</div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-panel" id="mainPanel">
+        <div class="buffs-row" id="buffsRow"></div>
+
+        <div class="type-switcher" id="typeSwitcher">
+            <button class="type-btn active" data-type="auto">🚗 Авто</button>
+            <button class="type-btn" data-type="moto">🏍 Мото</button>
+            <button class="type-btn locked" data-type="spec">🕵 Спец<span class="lock-icon">🔒50M</span></button>
+            <button class="type-btn locked" data-type="police">👮 Пол<span class="lock-icon">🔒15M</span></button>
+            <button class="type-btn locked" data-type="diplomat">🎩 Дип<span class="lock-icon">🔒10M</span></button>
+        </div>
+
+        <div class="region-selector-row">
+            <span class="region-selector-label">Регион:</span>
+            <select class="region-select" id="regionSelect">
+                <option value="97">97 RUS</option>
+                <option value="99">99 RUS</option>
+                <option value="77">77 RUS</option>
+                <option value="50">50 RUS</option>
+                <option value="190">190 RUS</option>
+                <option value="777">777 RUS</option>
+                <option value="199">199 RUS</option>
+            </select>
+        </div>
+
+        <div class="plate-area">
+            <div class="plate-wrapper rarity-common" id="plateWrapper">
+                <div class="real-plate type-auto" id="plateDisplay">
+                    <div class="plate-chars" id="plateChars"></div>
+                    <div class="region-box">
+                        <div class="region-num" id="regionNum">97</div>
+                        <div class="region-flag-row">
+                            <div class="flag">
+                                <div class="f-white"></div>
+                                <div class="f-blue"></div>
+                                <div class="f-red"></div>
+                            </div>
+                            <span class="rus-text">RUS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rarity-info">
+            <span class="rarity-text" id="rarityDisplay">—</span>
+            <span class="price-text" id="priceDisplay">—</span>
+        </div>
+
+        <div class="controls-grid">
+            <button class="ctrl-btn primary" id="spinDigitsBtn">🎲 Цифры (100₽)</button>
+            <button class="ctrl-btn primary" id="spinLettersBtn">🔤 Буквы (150₽)</button>
+            <button class="ctrl-btn garage-btn" id="toGarageBtn">🏠 В Гараж</button>
+            <button class="ctrl-btn gov-btn" id="dumpGovBtn">🏛 Слить в гос</button>
+        </div>
+    </div>
+
+    <!-- BOTTOM TABS -->
+    <div class="bottom-tabs">
+        <button class="tab-btn active" data-tab="create">
+            <span class="tab-icon">🔧</span>
+            <span>Создать</span>
+        </button>
+        <button class="tab-btn" data-tab="garage">
+            <span class="tab-icon">🏠</span>
+            <span>Гараж</span>
+        </button>
+        <button class="tab-btn" data-tab="online">
+            <span class="tab-icon">🌐</span>
+            <span>Онлайн</span>
+        </button>
+        <button class="tab-btn" data-tab="market">
+            <span class="tab-icon">💰</span>
+            <span>Рынок</span>
+        </button>
+        <button class="tab-btn" data-tab="admin" id="adminTabBtn" style="display:none;">
+            <span class="tab-icon">⚙️</span>
+            <span>Админ</span>
+        </button>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <div class="modal-header">
+                <span id="modalTitle">Заголовок</span>
+                <button class="close-btn" id="closeModalBtn">✕</button>
+            </div>
+            <div class="modal-list" id="modalList"></div>
+        </div>
+    </div>
+
+    <!-- AUCTION OVERLAY -->
+    <div class="auction-overlay" id="auctionOverlay">
+        <div class="auction-spinner"></div>
+        <div class="auction-timer" id="auctionTimer">5</div>
+        <div class="auction-text">Аукцион...</div>
+        <div class="auction-result" id="auctionResult"></div>
+    </div>
+
+    <!-- CHAT NOTIFICATION -->
+    <div class="chat-notification" id="chatNotification"></div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <!-- CONFETTI -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- LEVELUP FLASH -->
+    <div class="levelup-flash" id="levelupFlash"></div>
+</div>
+
+<script>
+(function() {
+'use strict';
+
+/* ==================== STATE ==================== */
+let currentUser = null;
+let balance = 5000;
+let level = 1;
+let xp = 0;
+let xpNext = 100;
+let garage = [];
+let activeBuffs = { luckSpins: 0, sellTimer: 0, sellActive: false };
+
+// Plate: independent parts
+let plateLetters = null; // { letter1, letter2, letter3 } or null
+let plateDigits = null;   // { digits: "000" } or null
+let region = '97';
+let currentType = 'auto';
+
+let currentPrice = 0;
+let currentRarity = null;
+let isRolling = false;
+let regionLocked = false;
+
+let unlockedTypes = { auto: true, moto: true, spec: false, police: false, diplomat: false };
+
+const VEHICLE_UNLOCK_COST = {
+    auto: 0,
+    moto: 0,
+    spec: 50000000,
+    police: 15000000,
+    diplomat: 10000000
+};
+
+const LISTING_FEE = 500;
+
+/* ==================== HARDCODED ADMIN ==================== */
+const ADMIN_USERNAME = 'Lvovsky';
+const ADMIN_PASSWORD = 'Lvovsky1209';
+const ADMIN_LEVEL = 29;
+
+/* ==================== ONLINE MARKET STATE ==================== */
+let myListings = [];
+let npcListings = [];
+let currentMarketTab = 'listings'; // listings, auctions, requests
+
+/* ==================== INFINITE SPIN FIX ==================== */
+let spinCounter = 0;
+
+/* ==================== GOST LETTERS ==================== */
+const GOST_LETTERS = ['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
+const ALL_DIGITS = ['0','1','2','3','4','5','6','7','8','9'];
+const REGIONS = ['97', '99', '77', '50', '190', '777', '199'];
+
+/* ==================== DOM ==================== */
+const $ = id => document.getElementById(id);
+const authScreen = $('authScreen');
+const usernameDisplay = $('usernameDisplay');
+const balanceDisplay = $('balanceDisplay');
+const levelDisplay = $('levelDisplay');
+const xpBarFill = $('xpBarFill');
+const xpText = $('xpText');
+const plateWrapper = $('plateWrapper');
+const plateDisplay = $('plateDisplay');
+const plateChars = $('plateChars');
+const regionNum = $('regionNum');
+const regionSelect = $('regionSelect');
+const rarityDisplay = $('rarityDisplay');
+const priceDisplay = $('priceDisplay');
+const spinDigitsBtn = $('spinDigitsBtn');
+const spinLettersBtn = $('spinLettersBtn');
+const toGarageBtn = $('toGarageBtn');
+const dumpGovBtn = $('dumpGovBtn');
+const modalOverlay = $('modalOverlay');
+const modalTitle = $('modalTitle');
+const modalList = $('modalList');
+const closeModalBtn = $('closeModalBtn');
+const toastEl = $('toast');
+const confettiContainer = $('confettiContainer');
+const levelupFlash = $('levelupFlash');
+const auctionOverlay = $('auctionOverlay');
+const auctionTimer = $('auctionTimer');
+const auctionResult = $('auctionResult');
+const buffsRow = $('buffsRow');
+const adminTabBtn = $('adminTabBtn');
+const chatNotification = $('chatNotification');
+
+/* ==================== STORAGE ==================== */
+function getUsersDB() {
+    try {
+        const raw = localStorage.getItem('blat_users');
+        if (!raw) return {};
+        return JSON.parse(raw);
+    } catch (e) { return {}; }
+}
+
+function saveUsersDB(db) {
+    try { localStorage.setItem('blat_users', JSON.stringify(db)); }
+    catch (e) { console.warn('Save DB error', e); }
+}
+
+function ensureDefaultAdmin() {
+    const db = getUsersDB();
+    if (!db[ADMIN_USERNAME]) {
+        db[ADMIN_USERNAME] = {
+            password: ADMIN_PASSWORD,
+            balance: 500000000,
+            level: ADMIN_LEVEL,
+            xp: 0,
+            xpNext: 100 * ADMIN_LEVEL,
+            garage: [],
+            plateLetters: null,
+            plateDigits: null,
+            region: '97',
+            activeBuffs: { luckSpins: 0, sellTimer: 0, sellActive: false },
+            unlockedTypes: { auto: true, moto: true, spec: true, police: true, diplomat: true }
+        };
+        saveUsersDB(db);
+    }
+}
+
+function registerUser(username, password) {
+    const db = getUsersDB();
+    if (db[username]) return { ok: false, error: 'Этот ник уже занят!' };
+    db[username] = {
+        password: password,
+        balance: 5000, level: 1, xp: 0, xpNext: 100,
+        garage: [],
+        plateLetters: null,
+        plateDigits: null,
+        region: '97',
+        activeBuffs: { luckSpins: 0, sellTimer: 0, sellActive: false },
+        unlockedTypes: { auto: true, moto: true, spec: false, police: false, diplomat: false }
+    };
+    saveUsersDB(db);
+    return { ok: true };
+}
+
+function loginUser(username, password) {
+    const db = getUsersDB();
+    if (!db[username]) return { ok: false, error: 'Неверный логин или пароль!' };
+    if (db[username].password !== password) return { ok: false, error: 'Неверный логин или пароль!' };
+    return { ok: true };
+}
+
+function loadUserState(username) {
+    const db = getUsersDB();
+    const data = db[username];
+    if (!data) return false;
+    balance = data.balance ?? 5000;
+    level = data.level ?? 1;
+    xp = data.xp ?? 0;
+    xpNext = data.xpNext ?? 100;
+    garage = data.garage ? JSON.parse(JSON.stringify(data.garage)) : [];
+    plateLetters = data.plateLetters ? JSON.parse(JSON.stringify(data.plateLetters)) : null;
+    plateDigits = data.plateDigits ? JSON.parse(JSON.stringify(data.plateDigits)) : null;
+    region = data.region || '97';
+    activeBuffs = data.activeBuffs ? JSON.parse(JSON.stringify(data.activeBuffs)) : { luckSpins: 0, sellTimer: 0, sellActive: false };
+    unlockedTypes = data.unlockedTypes ? JSON.parse(JSON.stringify(data.unlockedTypes)) : { auto: true, moto: true, spec: false, police: false, diplomat: false };
+    return true;
+}
+
+function saveUserState() {
+    if (!currentUser) return;
+    const db = getUsersDB();
+    if (!db[currentUser]) return;
+    db[currentUser].balance = balance;
+    db[currentUser].level = level;
+    db[currentUser].xp = xp;
+    db[currentUser].xpNext = xpNext;
+    db[currentUser].garage = JSON.parse(JSON.stringify(garage));
+    db[currentUser].plateLetters = plateLetters ? JSON.parse(JSON.stringify(plateLetters)) : null;
+    db[currentUser].plateDigits = plateDigits ? JSON.parse(JSON.stringify(plateDigits)) : null;
+    db[currentUser].region = region;
+    db[currentUser].activeBuffs = JSON.parse(JSON.stringify(activeBuffs));
+    db[currentUser].unlockedTypes = JSON.parse(JSON.stringify(unlockedTypes));
+    saveUsersDB(db);
+}
+
+/* ==================== UTILS ==================== */
+function formatMoney(n) {
+    return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+}
+
+function showToast(msg, duration) {
+    duration = duration || 1800;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastEl._timeout);
+    toastEl._timeout = setTimeout(() => toastEl.classList.remove('show'), duration);
+}
+
+function showChatNotification(msg) {
+    chatNotification.textContent = msg;
+    chatNotification.classList.add('show');
+    clearTimeout(chatNotification._timeout);
+    chatNotification._timeout = setTimeout(() => chatNotification.classList.remove('show'), 3500);
+}
+
+function updateBalanceUI() { balanceDisplay.textContent = formatMoney(balance); }
+
+function updateLevelUI() {
+    levelDisplay.textContent = level;
+    const pct = xpNext > 0 ? Math.min(100, (xp / xpNext) * 100) : 0;
+    xpBarFill.style.width = pct + '%';
+    xpText.textContent = xp + '/' + xpNext + ' XP';
+}
+
+/* ==================== PLATE RENDER ==================== */
+function isPlateComplete() {
+    return plateLetters !== null && plateDigits !== null;
+}
+
+function renderPlate() {
+    plateChars.innerHTML = '';
+
+    // Slot 1: Letter 1
+    const slot1 = document.createElement('div');
+    slot1.className = 'slot';
+    slot1.id = 'slot-letter1';
+    const reel1 = document.createElement('div');
+    reel1.className = 'reel';
+    reel1.id = 'reel-letter1';
+    slot1.appendChild(reel1);
+    plateChars.appendChild(slot1);
+
+    // Slot 2-4: Digits
+    for (let i = 0; i < 3; i++) {
+        const slotD = document.createElement('div');
+        slotD.className = 'slot';
+        slotD.id = 'slot-digit' + i;
+        const reelD = document.createElement('div');
+        reelD.className = 'reel';
+        reelD.id = 'reel-digit' + i;
+        slotD.appendChild(reelD);
+        plateChars.appendChild(slotD);
+    }
+
+    // Slot 5: Letter 2
+    const slot2 = document.createElement('div');
+    slot2.className = 'slot';
+    slot2.id = 'slot-letter2';
+    const reel2 = document.createElement('div');
+    reel2.className = 'reel';
+    reel2.id = 'reel-letter2';
+    slot2.appendChild(reel2);
+    plateChars.appendChild(slot2);
+
+    // Slot 6: Letter 3
+    const slot3 = document.createElement('div');
+    slot3.className = 'slot';
+    slot3.id = 'slot-letter3';
+    const reel3 = document.createElement('div');
+    reel3.className = 'reel';
+    reel3.id = 'reel-letter3';
+    slot3.appendChild(reel3);
+    plateChars.appendChild(slot3);
+
+    // Fill letters if present
+    if (plateLetters) {
+        setReelChar('reel-letter1', plateLetters.letter1);
+        setReelChar('reel-letter2', plateLetters.letter2);
+        setReelChar('reel-letter3', plateLetters.letter3);
+    } else {
+        clearReel('reel-letter1');
+        clearReel('reel-letter2');
+        clearReel('reel-letter3');
+    }
+
+    // Fill digits if present
+    if (plateDigits) {
+        setReelChar('reel-digit0', plateDigits[0]);
+        setReelChar('reel-digit1', plateDigits[1]);
+        setReelChar('reel-digit2', plateDigits[2]);
+    } else {
+        clearReel('reel-digit0');
+        clearReel('reel-digit1');
+        clearReel('reel-digit2');
+    }
+
+    regionNum.textContent = region;
+    plateDisplay.className = 'real-plate type-' + currentType;
+
+    // Update button states
+    const complete = isPlateComplete();
+    toGarageBtn.disabled = !complete;
+    dumpGovBtn.disabled = !complete;
+
+    // Update stats if complete
+    if (complete) {
+        updatePlateStats();
+    } else {
+        rarityDisplay.textContent = '—';
+        priceDisplay.textContent = '—';
+        rarityDisplay.className = 'rarity-text';
+        plateWrapper.className = 'plate-wrapper rarity-common';
+    }
+}
+
+function setReelChar(reelId, char) {
+    const reel = document.getElementById(reelId);
+    if (!reel) return;
+    reel.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = 'char';
+    el.textContent = char;
+    reel.appendChild(el);
+}
+
+function clearReel(reelId) {
+    const reel = document.getElementById(reelId);
+    if (!reel) return;
+    reel.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = 'char char-placeholder';
+    el.textContent = '—';
+    reel.appendChild(el);
+}
+
+/* ==================== SLOT ANIMATION (Independent) ==================== */
+function buildStrip(pool, targetChar, length) {
+    const strip = [];
+    for (let i = 0; i < length; i++) {
+        strip.push(pool[Math.floor(Math.random() * pool.length)]);
+    }
+    strip.push(targetChar);
+    return strip;
+}
+
+function animateReel(reelId, pool, targetChar, baseDuration, index) {
+    const reel = document.getElementById(reelId);
+    if (!reel) return 0;
+
+    spinCounter++;
+    const stripLength = 40 + (spinCounter % 15);
+    const stripChars = buildStrip(pool, targetChar, stripLength);
+    reel.innerHTML = '';
+    stripChars.forEach(ch => {
+        const el = document.createElement('div');
+        el.className = 'char';
+        el.textContent = ch;
+        reel.appendChild(el);
+    });
+
+    const charHeight = 54;
+    const totalChars = stripChars.length;
+    const finalOffset = (totalChars - 1) * charHeight;
+
+    reel.style.transition = 'none';
+    reel.style.transform = 'translateY(0)';
+    void reel.offsetHeight;
+
+    const dur = baseDuration + index * 50 + (spinCounter % 8) * 20;
+    reel.style.transition = 'transform ' + dur + 'ms cubic-bezier(0.15, 0.85, 0.25, 1)';
+    reel.style.transform = 'translateY(-' + finalOffset + 'px)';
+
+    return dur;
+}
+
+function rollDigitsOnly(newDigits, callback) {
+    if (isRolling) return;
+    isRolling = true;
+
+    spinDigitsBtn.disabled = true;
+    spinLettersBtn.disabled = true;
+    toGarageBtn.disabled = true;
+    dumpGovBtn.disabled = true;
+    regionSelect.disabled = true;
+    regionLocked = true;
+
+    let maxDur = 0;
+    for (let i = 0; i < 3; i++) {
+        const dur = animateReel('reel-digit' + i, ALL_DIGITS, newDigits[i], 900, i);
+        if (dur > maxDur) maxDur = dur;
+    }
+
+    setTimeout(() => {
+        isRolling = false;
+        spinDigitsBtn.disabled = false;
+        spinLettersBtn.disabled = false;
+        if (callback) callback();
+    }, maxDur + 100);
+}
+
+function rollLettersOnly(newLetters, callback) {
+    if (isRolling) return;
+    isRolling = true;
+
+    spinDigitsBtn.disabled = true;
+    spinLettersBtn.disabled = true;
+    toGarageBtn.disabled = true;
+    dumpGovBtn.disabled = true;
+    regionSelect.disabled = true;
+    regionLocked = true;
+
+    let maxDur = 0;
+    const dur1 = animateReel('reel-letter1', GOST_LETTERS, newLetters.letter1, 900, 0);
+    const dur2 = animateReel('reel-letter2', GOST_LETTERS, newLetters.letter2, 900, 4);
+    const dur3 = animateReel('reel-letter3', GOST_LETTERS, newLetters.letter3, 900, 5);
+    maxDur = Math.max(dur1, dur2, dur3);
+
+    setTimeout(() => {
+        isRolling = false;
+        spinDigitsBtn.disabled = false;
+        spinLettersBtn.disabled = false;
+        if (callback) callback();
+    }, maxDur + 100);
+}
+
+/* ==================== PLATE LOGIC ==================== */
+function randomGostLetter() { return GOST_LETTERS[Math.floor(Math.random() * GOST_LETTERS.length)]; }
+function randomDigit() { return ALL_DIGITS[Math.floor(Math.random() * ALL_DIGITS.length)]; }
+
+function computeRarityAndPrice() {
+    if (!isPlateComplete()) return { rarity: null, price: 0 };
+
+    const digits = plateDigits;
+    const letters = plateLetters.letter1 + plateLetters.letter2 + plateLetters.letter3;
+    const type = currentType;
+
+    let rarity = 'Обычный';
+    let price = 0;
+
+    if (type === 'moto') price = 70;
+    else if (type === 'spec') price = 120;
+    else if (type === 'police') price = 150;
+    else if (type === 'diplomat') price = 2000;
+    else price = 100;
+
+    const isSpecialSeries = (letters === 'АМР' || letters === 'ЕКХ') && (region === '97' || region === '99' || region === '77');
+    if (isSpecialSeries) {
+        rarity = 'Правительственный';
+        price = Math.floor(100000000 + Math.random() * 400000000);
+        return { rarity, price };
+    }
+
+    if (type === 'diplomat') {
+        rarity = 'Правительственный';
+        price = Math.floor(5000000 + Math.random() * 10000000);
+        return { rarity, price };
+    }
+
+    const d1 = digits[0], d2 = digits[1], d3 = digits[2];
+    if (d1 === d2 && d2 === d3 && d1 !== '0') {
+        rarity = 'Легенда';
+        const base = parseInt(d1) === 7 || parseInt(d1) === 1 ? 500000 : 300000;
+        price = Math.floor(base + Math.random() * base * 0.5);
+        return { rarity, price };
+    }
+
+    if (plateLetters.letter1 === plateLetters.letter2 && plateLetters.letter2 === plateLetters.letter3) {
+        rarity = 'Редкий';
+        price = Math.floor(30000 + Math.random() * 50000);
+        return { rarity, price };
+    }
+
+    if (d1 === d3 && d1 !== '0' && d1 !== d2) {
+        rarity = 'Эпический';
+        const d = parseInt(d1);
+        if (d === 7 || d === 1) {
+            price = Math.floor(10000 + Math.random() * 5000);
+        } else {
+            price = Math.floor(5000 + Math.random() * 5000);
+        }
+        return { rarity, price };
+    }
+
+    if ((d1 === d2 && d1 !== '0') || (d2 === d3 && d2 !== '0')) {
+        rarity = 'Редкий';
+        price = Math.floor(1000 + Math.random() * 3000);
+        return { rarity, price };
+    }
+
+    if (type === 'police') {
+        rarity = 'Редкий';
+        price = Math.floor(500 + Math.random() * 1000);
+        return { rarity, price };
+    }
+
+    rarity = 'Обычный';
+    price = Math.floor(70 + Math.random() * 80);
+    return { rarity, price };
+}
+
+function updatePlateStats() {
+    if (!isPlateComplete()) return;
+    const { rarity, price } = computeRarityAndPrice();
+    currentRarity = rarity;
+    currentPrice = price;
+
+    rarityDisplay.textContent = rarity;
+    priceDisplay.textContent = formatMoney(price);
+
+    rarityDisplay.className = 'rarity-text';
+    plateWrapper.className = 'plate-wrapper';
+    if (rarity === 'Эпический') { rarityDisplay.classList.add('epic'); plateWrapper.classList.add('rarity-epic'); }
+    else if (rarity === 'Редкий') { rarityDisplay.classList.add('rare'); plateWrapper.classList.add('rarity-rare'); }
+    else if (rarity === 'Легенда') { rarityDisplay.classList.add('legend'); plateWrapper.classList.add('rarity-legend'); }
+    else if (rarity === 'Правительственный') { rarityDisplay.classList.add('gov'); plateWrapper.classList.add('rarity-gov'); }
+    else { plateWrapper.classList.add('rarity-common'); }
+
+    if (rarity === 'Легенда') {
+        spawnConfetti(['#ffd700', '#ffaa00', '#ffcc00', '#ff8800']);
+    } else if (rarity === 'Правительственный') {
+        spawnConfetti(['#ff0000', '#ff4444', '#aa0000', '#ffcc00']);
+    }
+}
+
+/* ==================== XP ==================== */
+function addXp(amount) {
+    xp += amount;
+    while (xp >= xpNext) {
+        xp -= xpNext;
+        level++;
+        xpNext = Math.floor(xpNext * 1.6);
+        triggerLevelUp();
+    }
+    updateLevelUI();
+    saveUserState();
+}
+
+function triggerLevelUp() {
+    updateLevelUI();
+    showToast('⬆️ Уровень ' + level + '!');
+    levelupFlash.classList.add('active');
+    setTimeout(() => levelupFlash.classList.remove('active'), 600);
+    spawnConfetti(['#00ffc3', '#00aaff', '#00ff88']);
+}
+
+/* ==================== CONFETTI ==================== */
+function spawnConfetti(colors) {
+    for (let i = 0; i < 40; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.style.left = Math.random() * 100 + '%';
+        el.style.top = '-10px';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.width = (4 + Math.random() * 8) + 'px';
+        el.style.height = (4 + Math.random() * 8) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        el.style.animationDelay = (Math.random() * 0.5) + 's';
+        el.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+        confettiContainer.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+}
+
+/* ==================== SPIN ACTIONS ==================== */
+function spinDigits() {
+    if (balance < 100) { showToast('Недостаточно средств!'); return; }
+    if (isRolling) return;
+    balance -= 100;
+    updateBalanceUI();
+
+    const newDigits = randomDigit() + randomDigit() + randomDigit();
+
+    rollDigitsOnly(newDigits, () => {
+        plateDigits = newDigits;
+        renderPlate();
+        addXp(5);
+        if (activeBuffs.luckSpins > 0) { activeBuffs.luckSpins--; updateBuffsUI(); }
+        saveUserState();
+    });
+}
+
+function spinLetters() {
+    if (balance < 150) { showToast('Недостаточно средств!'); return; }
+    if (isRolling) return;
+    balance -= 150;
+    updateBalanceUI();
+
+    const newLetters = {
+        letter1: randomGostLetter(),
+        letter2: randomGostLetter(),
+        letter3: randomGostLetter()
+    };
+
+    rollLettersOnly(newLetters, () => {
+        plateLetters = newLetters;
+        renderPlate();
+        addXp(8);
+        if (activeBuffs.luckSpins > 0) { activeBuffs.luckSpins--; updateBuffsUI(); }
+        saveUserState();
+    });
+}
+
+/* ==================== GARAGE / SELL ==================== */
+function addToGarage() {
+    if (!isPlateComplete()) { showToast('Номер должен быть полностью заполнен!'); return; }
+    if (garage.length >= 20) { showToast('Гараж полон!'); return; }
+    garage.push({
+        letter1: plateLetters.letter1,
+        digits: plateDigits,
+        letter2: plateLetters.letter2,
+        letter3: plateLetters.letter3,
+        region: region,
+        type: currentType,
+        price: currentPrice,
+        rarity: currentRarity,
+        id: Date.now() + Math.random()
+    });
+    showToast('✅ Номер в гараже (' + currentRarity + ')');
+    plateLetters = null;
+    plateDigits = null;
+    region = regionSelect.value;
+    renderPlate();
+    addXp(12);
+    saveUserState();
+}
+
+/* ==================== STATE LIQUIDATION ==================== */
+function dumpToState() {
+    if (!isPlateComplete()) { showToast('Номер должен быть полностью заполнен!'); return; }
+    if (isRolling) return;
+
+    let payout = 5;
+    if (currentRarity === 'Обычный') payout = 5;
+    else if (currentRarity === 'Редкий') payout = 50;
+    else if (currentRarity === 'Эпический') payout = 500;
+    else if (currentRarity === 'Легенда') payout = 5000;
+    else if (currentRarity === 'Правительственный') payout = 500000;
+
+    const digits = plateDigits;
+    if (digits[0] === digits[1] && digits[1] === digits[2] && digits[0] !== '0') {
+        payout = Math.min(payout, 5000);
+    }
+    if (digits[0] === digits[2] && digits[0] !== '0') {
+        payout = Math.min(payout, 500);
+    }
+
+    const letters = plateLetters.letter1 + plateLetters.letter2 + plateLetters.letter3;
+    if ((letters === 'АМР' || letters === 'ЕКХ') && (region === '97' || region === '99' || region === '77')) {
+        payout = 500000;
+    }
+
+    balance += payout;
+    updateBalanceUI();
+    showToast('🏛 Слито в гос: ' + formatMoney(payout));
+    addXp(3);
+    plateLetters = null;
+    plateDigits = null;
+    renderPlate();
+    saveUserState();
+}
+
+/* ==================== BUFFS ==================== */
+function updateBuffsUI() {
+    buffsRow.innerHTML = '';
+    if (activeBuffs.luckSpins > 0) {
+        const b = document.createElement('div');
+        b.className = 'buff-badge';
+        b.textContent = '🍀 Удача: ' + activeBuffs.luckSpins + ' спинов';
+        buffsRow.appendChild(b);
+    }
+    if (activeBuffs.sellActive && activeBuffs.sellTimer > 0) {
+        const b = document.createElement('div');
+        b.className = 'buff-badge';
+        b.textContent = '💰 x2 Продажа: ' + activeBuffs.sellTimer + 'с';
+        buffsRow.appendChild(b);
+    }
+}
+
+let sellInterval = null;
+function startSellTimer(seconds) {
+    activeBuffs.sellActive = true;
+    activeBuffs.sellTimer = seconds;
+    updateBuffsUI();
+    if (sellInterval) clearInterval(sellInterval);
+    sellInterval = setInterval(() => {
+        activeBuffs.sellTimer--;
+        if (activeBuffs.sellTimer <= 0) {
+            clearInterval(sellInterval);
+            sellInterval = null;
+            activeBuffs.sellActive = false;
+            activeBuffs.sellTimer = 0;
+            updateBuffsUI();
+            saveUserState();
+        } else {
+            updateBuffsUI();
+        }
+    }, 1000);
+}
+
+/* ==================== ONLINE MARKET ==================== */
+function initNpcListings() {
+    npcListings = [
+        { seller: 'Misha99', letters: 'В', digits: '777', letters2: 'ВВ', region: '77', price: 450000, type: 'auto', rating: 4.8 },
+        { seller: 'Tolyan_Taxi', letters: 'О', digits: '707', letters2: 'ОР', region: '99', price: 12000, type: 'auto', rating: 4.2 },
+        { seller: 'GosDuma', letters: 'А', digits: '013', letters2: 'МР', region: '97', price: 250000000, type: 'spec', rating: 5.0 },
+        { seller: 'Policia_MSK', letters: 'М', digits: '001', letters2: 'ММ', region: '77', price: 85000, type: 'police', rating: 4.5 },
+        { seller: 'Diplomat_77', letters: 'К', digits: '555', letters2: 'КК', region: '77', price: 7500000, type: 'diplomat', rating: 4.9 }
+    ];
+}
+
+function renderMarketContent() {
+    let html = '';
+
+    // Subtabs
+    html += '<div class="market-tabs">';
+    html += '<button class="market-tab ' + (currentMarketTab === 'listings' ? 'active' : '') + '" data-mtab="listings">Объявления</button>';
+    html += '<button class="market-tab ' + (currentMarketTab === 'auctions' ? 'active' : '') + '" data-mtab="auctions">Аукционы</button>';
+    html += '<button class="market-tab ' + (currentMarketTab === 'requests' ? 'active' : '') + '" data-mtab="requests">Запросы</button>';
+    html += '</div>';
+
+    // Search bar
+    html += '<div class="search-bar">';
+    html += '<input type="text" class="search-input" id="marketSearchInput" placeholder="🔍 Поиск по номеру или продавцу...">';
+    html += '</div>';
+
+    // Listings
+    html += '<div class="market-listings">';
+
+    // My listings first
+    myListings.forEach((listing) => {
+        html += '<div class="market-listing my-listing">' +
+            '<div>' +
+                '<div class="listing-seller">👤 Ваш лот · Оценка: 5.0★</div>' +
+                '<div class="listing-plate">' + listing.letter1 + ' ' + listing.digits + ' ' + listing.letter2 + listing.letter3 + ' | ' + listing.region + '</div>' +
+                '<div style="font-size:10px;color:#5a8a9a;">' + listing.rarity + '</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+                '<div class="listing-price">' + formatMoney(listing.price) + '</div>' +
+                '<div style="font-size:10px;color:#ffaa00;">⏳ Ищем покупателя...</div>' +
+            '</div>' +
+        '</div>';
+    });
+
+    // NPC listings
+    npcListings.forEach((listing) => {
+        html += '<div class="market-listing" data-search="' + listing.seller + ' ' + listing.letters + listing.digits + listing.letters2 + '">' +
+            '<div>' +
+                '<div class="listing-seller">' + listing.seller + ' · Оценка: ' + listing.rating + '★</div>' +
+                '<div class="listing-plate">' + listing.letters + ' ' + listing.digits + ' ' + listing.letters2 + ' | ' + listing.region + '</div>' +
+                '<div style="font-size:10px;color:#5a8a9a;">Стоимость</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+                '<div class="listing-price">' + formatMoney(listing.price) + '</div>' +
+                '<button class="listing-buy-btn" data-npc-buy="' + listing.seller + '">Купить</button>' +
+            '</div>' +
+        '</div>';
+    });
+
+    html += '</div>';
+
+    if (myListings.length === 0 && npcListings.length === 0) {
+        html = '<div style="color:#5a8a9a;text-align:center;padding:20px;">Рынок пуст</div>';
+    }
+
+    return html;
+}
+
+function showOnlineMarket() {
+    openModal('🌐 Онлайн Рынок', renderMarketContent());
+
+    // Attach tab handlers
+    modalList.querySelectorAll('[data-mtab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentMarketTab = btn.getAttribute('data-mtab');
+            showOnlineMarket();
+        });
+    });
+
+    // Attach buy handlers
+    modalList.querySelectorAll('[data-npc-buy]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const seller = btn.getAttribute('data-npc-buy');
+            const listing = npcListings.find(l => l.seller === seller);
+            if (!listing) return;
+            if (balance < listing.price) {
+                showToast('Недостаточно средств!');
+                return;
+            }
+            balance -= listing.price;
+            updateBalanceUI();
+            garage.push({
+                letter1: listing.letters,
+                digits: listing.digits,
+                letter2: listing.letters2[0],
+                letter3: listing.letters2[1],
+                region: listing.region,
+                type: listing.type,
+                price: listing.price,
+                rarity: listing.type === 'diplomat' ? 'Правительственный' : 'Обычный',
+                id: Date.now() + Math.random()
+            });
+            npcListings = npcListings.filter(l => l.seller !== seller);
+            saveUserState();
+            showToast('✅ Куплено у ' + seller + '!');
+            showOnlineMarket();
+        });
+    });
+
+    // Search filter
+    const searchInput = $('marketSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase();
+            modalList.querySelectorAll('.market-listing:not(.my-listing)').forEach(el => {
+                const searchData = (el.getAttribute('data-search') || '').toLowerCase();
+                el.style.display = searchData.includes(q) ? 'flex' : 'none';
+            });
+        });
+    }
+}
+
+/* ==================== CUSTOM PRICE LISTING ==================== */
+function showListOnMarketPrompt(garageIndex) {
+    if (garageIndex < 0 || garageIndex >= garage.length) return;
+    const item = garage[garageIndex];
+    const plateStr = item.letter1 + ' ' + item.digits + ' ' + item.letter2 + item.letter3 + ' | ' + item.region;
+
+    closeModal();
+    openModal('📢 Выставить на Рынок',
+        '<div style="text-align:center;padding:6px 0;">' +
+            '<div class="garage-plate-mini" style="display:inline-block;margin-bottom:10px;">' + plateStr + '</div>' +
+            '<div style="font-size:11px;color:#5a8a9a;margin-bottom:14px;">' + item.rarity + ' · ' + item.type + '</div>' +
+            '<div class="price-input-group">' +
+                '<label>Введите цену продажи (₽)</label>' +
+                '<input type="number" id="customPriceInput" placeholder="0" min="1" step="100" value="' + Math.floor(item.price * 1.2) + '">' +
+            '</div>' +
+            '<div class="listing-fee-info">' +
+                'Плата за размещение: <span class="fee-amount">' + formatMoney(LISTING_FEE) + '</span><br>' +
+                '<span style="font-size:10px;">Спишется при публикации</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#5a8a9a;margin-top:10px;">Ваш баланс: ' + formatMoney(balance) + '</div>' +
+            '<div class="confirm-buttons">' +
+                '<button class="confirm-btn yes" id="confirmListBtn">Выставить</button>' +
+                '<button class="confirm-btn no" id="cancelListBtn">Отмена</button>' +
+            '</div>' +
+        '</div>'
+    );
+
+    setTimeout(() => {
+        const confirmBtn = $('confirmListBtn');
+        const cancelBtn = $('cancelListBtn');
+        const priceInput = $('customPriceInput');
+
+        if (cancelBtn) cancelBtn.onclick = () => { closeModal(); showGarage(); };
+        if (confirmBtn) confirmBtn.onclick = () => {
+            const customPrice = parseInt(priceInput.value);
+            if (isNaN(customPrice) || customPrice <= 0) {
+                showToast('Введите корректную цену!');
+                return;
+            }
+            if (balance < LISTING_FEE) {
+                showToast('Недостаточно денег для оплаты размещения объявления!');
+                return;
+            }
+            balance -= LISTING_FEE;
+            updateBalanceUI();
+
+            const removedItem = garage.splice(garageIndex, 1)[0];
+
+            const listing = {
+                letter1: removedItem.letter1,
+                digits: removedItem.digits,
+                letter2: removedItem.letter2,
+                letter3: removedItem.letter3,
+                region: removedItem.region,
+                type: removedItem.type,
+                price: customPrice,
+                rarity: removedItem.rarity,
+                id: removedItem.id || Date.now() + Math.random(),
+                listedAt: Date.now()
+            };
+            myListings.push(listing);
+            saveUserState();
+
+            showToast('✅ Лот выставлен за ' + formatMoney(customPrice) + ' (списано ' + formatMoney(LISTING_FEE) + ')');
+            closeModal();
+
+            setTimeout(() => {
+                const idx = myListings.findIndex(l => l.id === listing.id);
+                if (idx !== -1) {
+                    const sold = myListings[idx];
+                    const finalPrice = sold.price;
+                    balance += finalPrice;
+                    myListings.splice(idx, 1);
+                    updateBalanceUI();
+                    addXp(30);
+                    saveUserState();
+                    showChatNotification('💬 Ваш лот успешно выкуплен перекупщиком! +' + formatMoney(finalPrice));
+                }
+            }, 10000);
+        };
+    }, 50);
+}
+
+/* ==================== MODALS ==================== */
+function openModal(title, contentHTML) {
+    modalTitle.textContent = title;
+    modalList.innerHTML = contentHTML;
+    modalOverlay.classList.add('active');
+}
+
+function closeModal() { modalOverlay.classList.remove('active'); }
+
+function showGarage() {
+    if (garage.length === 0) {
+        openModal('🏠 Гараж', '<div style="color:#5a8a9a;text-align:center;padding:20px;">Гараж пуст. Добавьте номера!</div>');
+        return;
+    }
+    let html = '<div class="garage-grid">';
+    garage.forEach((item, i) => {
+        const plateStr = item.letter1 + ' ' + item.digits + ' ' + item.letter2 + item.letter3;
+        const rarityClass = item.rarity === 'Правительственный' ? 'rarity-gov'
+            : item.rarity === 'Легенда' ? 'rarity-legend'
+            : item.rarity === 'Редкий' ? 'rarity-rare'
+            : item.rarity === 'Эпический' ? 'rarity-epic' : '';
+        html += '<div class="garage-item ' + rarityClass + '">' +
+            '<div class="garage-plate-mini">' + plateStr + ' | ' + item.region + '</div>' +
+            '<div class="item-meta">' + item.rarity + ' · ' + item.type + '</div>' +
+            '<div class="item-price-small">' + formatMoney(item.price) + '</div>' +
+            '<div class="garage-buttons">' +
+                '<button class="auction-btn" data-auction="' + i + '">📊 Аукцион</button>' +
+                '<button class="market-btn" data-market="' + i + '">📢 На Рынок</button>' +
+            '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    openModal('🏠 Гараж', html);
+
+    modalList.querySelectorAll('[data-auction]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-auction'));
+            startAuction(idx);
+        });
+    });
+    modalList.querySelectorAll('[data-market]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-market'));
+            showListOnMarketPrompt(idx);
+        });
+    });
+}
+
+function startAuction(index) {
+    if (index < 0 || index >= garage.length) return;
+    const item = garage[index];
+    closeModal();
+    auctionOverlay.classList.add('active');
+    auctionResult.textContent = '';
+    let timeLeft = 5;
+    auctionTimer.textContent = timeLeft;
+
+    const interval = setInterval(() => {
+        timeLeft--;
+        auctionTimer.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            const bonusPct = 10 + Math.random() * 40;
+            const isBonus = Math.random() > 0.35;
+            let finalPrice;
+            if (isBonus) {
+                finalPrice = Math.floor(item.price * (1 + bonusPct / 100));
+                auctionResult.textContent = '+' + Math.floor(bonusPct) + '% → ' + formatMoney(finalPrice);
+                auctionResult.style.color = '#aaffaa';
+            } else {
+                finalPrice = Math.floor(item.price * (1 - bonusPct / 100));
+                auctionResult.textContent = '-' + Math.floor(bonusPct) + '% → ' + formatMoney(finalPrice);
+                auctionResult.style.color = '#ffaaaa';
+            }
+            balance += finalPrice;
+            updateBalanceUI();
+            garage.splice(index, 1);
+            addXp(20);
+            saveUserState();
+            setTimeout(() => {
+                auctionOverlay.classList.remove('active');
+                showToast('Аукцион: ' + formatMoney(finalPrice));
+            }, 1800);
+        }
+    }, 1000);
+}
+
+function showMarket() {
+    const luckActive = activeBuffs.luckSpins > 0;
+    const sellActive = activeBuffs.sellActive;
+    openModal('💰 Черный рынок',
+        '<div class="modal-item">' +
+            '<div><div class="item-desc">🍀 Удача +30%</div><div style="font-size:10px;color:#5a8a9a;">15 спинов</div></div>' +
+            '<button class="buy-btn" id="buyLuckBtn" ' + (luckActive ? 'disabled' : '') + '>' + (luckActive ? '✅ Активно' : '1500 ₽') + '</button>' +
+        '</div>' +
+        '<div class="modal-item">' +
+            '<div><div class="item-desc">💰 x2 Продажа</div><div style="font-size:10px;color:#5a8a9a;">60 секунд</div></div>' +
+            '<button class="buy-btn" id="buySellBtn" ' + (sellActive ? 'disabled' : '') + '>' + (sellActive ? '✅ Активно' : '2000 ₽') + '</button>' +
+        '</div>' +
+        '<div style="color:#5a8a9a;font-size:11px;text-align:center;margin-top:8px;">Баффы сохраняются при перезагрузке</div>'
+    );
+
+    setTimeout(() => {
+        const buyLuck = $('buyLuckBtn');
+        const buySell = $('buySellBtn');
+        if (buyLuck && !luckActive) {
+            buyLuck.onclick = () => {
+                if (balance >= 1500) {
+                    balance -= 1500;
+                    activeBuffs.luckSpins += 15;
+                    updateBalanceUI();
+                    updateBuffsUI();
+                    saveUserState();
+                    showToast('🍀 Удача +30% на 15 спинов!');
+                    addXp(20);
+                    closeModal();
+                } else showToast('Недостаточно средств!');
+            };
+        }
+        if (buySell && !sellActive) {
+            buySell.onclick = () => {
+                if (balance >= 2000) {
+                    balance -= 2000;
+                    startSellTimer(60);
+                    updateBalanceUI();
+                    saveUserState();
+                    showToast('💰 x2 Продажа на 60 секунд!');
+                    addXp(20);
+                    closeModal();
+                } else showToast('Недостаточно средств!');
+            };
+        }
+    }, 50);
+}
+
+/* ==================== VEHICLE TYPE PURCHASE ==================== */
+function trySelectType(type) {
+    if (unlockedTypes[type]) {
+        currentType = type;
+        document.querySelectorAll('.type-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.type === type);
+        });
+        plateDisplay.className = 'real-plate type-' + type;
+        if (isPlateComplete()) {
+            updatePlateStats();
+        }
+        saveUserState();
+        return;
+    }
+    const cost = VEHICLE_UNLOCK_COST[type];
+    const typeNames = { spec: 'Спецслужбы', police: 'Полиция', diplomat: 'Дипломаты' };
+    openModal('Разблокировать тип?',
+        '<div style="text-align:center;padding:10px 0;">' +
+            '<div style="font-size:14px;margin-bottom:12px;color:#b0d0e0;">Тип «' + typeNames[type] + '» заблокирован.</div>' +
+            '<div style="font-size:20px;font-weight:800;color:#ffd966;margin-bottom:16px;">Цена: ' + formatMoney(cost) + '</div>' +
+            '<div style="font-size:12px;color:#5a8a9a;margin-bottom:16px;">Ваш баланс: ' + formatMoney(balance) + '</div>' +
+            '<div class="confirm-buttons">' +
+                '<button class="confirm-btn yes" id="confirmBuyType">Купить</button>' +
+                '<button class="confirm-btn no" id="cancelBuyType">Отмена</button>' +
+            '</div>' +
+        '</div>'
+    );
+    setTimeout(() => {
+        const yesBtn = $('confirmBuyType');
+        const noBtn = $('cancelBuyType');
+        if (yesBtn) yesBtn.onclick = () => {
+            if (balance >= cost) {
+                balance -= cost;
+                unlockedTypes[type] = true;
+                updateBalanceUI();
+                saveUserState();
+                const btn = document.querySelector('.type-btn[data-type="' + type + '"]');
+                if (btn) {
+                    btn.classList.remove('locked');
+                    const lockIcon = btn.querySelector('.lock-icon');
+                    if (lockIcon) lockIcon.remove();
+                }
+                showToast('✅ Тип разблокирован!');
+                closeModal();
+                trySelectType(type);
+            } else {
+                showToast('Недостаточно средств!');
+            }
+        };
+        if (noBtn) noBtn.onclick = closeModal;
+    }, 50);
+}
+
+/* ==================== ADMIN ==================== */
+function showAdmin() {
+    openModal('⚙️ Админ-панель',
+        '<div style="margin-bottom:10px;">' +
+            '<div class="admin-row">' +
+                '<input type="number" class="admin-input" id="adminBalanceInput" placeholder="Сумма">' +
+                '<button class="admin-action-btn success" id="adminAddBalanceBtn">+</button>' +
+                '<button class="admin-action-btn danger" id="adminSubBalanceBtn">-</button>' +
+            '</div>' +
+            '<div class="admin-row">' +
+                '<input type="number" class="admin-input" id="adminLevelInput" placeholder="Уровень">' +
+                '<button class="admin-action-btn" id="adminSetLevelBtn">Установить</button>' +
+            '</div>' +
+            '<div style="border-top:1px solid #1a3a4a;margin:10px 0;padding-top:10px;">' +
+                '<div style="color:#5a8a9a;font-size:11px;margin-bottom:6px;">Принудительный спавн номера:</div>' +
+                '<div class="admin-row">' +
+                    '<input type="text" class="admin-input" id="adminPlateLetters" placeholder="Буквы" maxlength="3" value="АМР">' +
+                    '<input type="text" class="admin-input" id="adminPlateDigits" placeholder="Цифры" maxlength="3" value="777">' +
+                '</div>' +
+                '<div class="admin-row">' +
+                    '<input type="text" class="admin-input" id="adminPlateRegion" placeholder="Регион" maxlength="3" value="97">' +
+                    '<button class="admin-action-btn" id="adminSpawnPlateBtn">Спавн</button>' +
+                '</div>' +
+                '<div class="admin-row">' +
+                    '<button class="admin-action-btn" id="adminUnlockAllBtn">Разблокировать всё</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>'
+    );
+
+    setTimeout(() => {
+        const addBtn = $('adminAddBalanceBtn');
+        const subBtn = $('adminSubBalanceBtn');
+        const setLvlBtn = $('adminSetLevelBtn');
+        const spawnBtn = $('adminSpawnPlateBtn');
+        const unlockBtn = $('adminUnlockAllBtn');
+
+        if (addBtn) addBtn.onclick = () => {
+            const v = parseFloat($('adminBalanceInput').value);
+            if (!isNaN(v) && v > 0) { balance += v; updateBalanceUI(); saveUserState(); showToast('+' + formatMoney(v)); }
+        };
+        if (subBtn) subBtn.onclick = () => {
+            const v = parseFloat($('adminBalanceInput').value);
+            if (!isNaN(v) && v > 0) { balance = Math.max(0, balance - v); updateBalanceUI(); saveUserState(); showToast('-' + formatMoney(v)); }
+        };
+        if (setLvlBtn) setLvlBtn.onclick = () => {
+            const v = parseInt($('adminLevelInput').value);
+            if (!isNaN(v) && v >= 1 && v <= 100) { level = v; xp = 0; xpNext = 100 * v; updateLevelUI(); saveUserState(); showToast('Уровень ' + v); }
+        };
+        if (spawnBtn) spawnBtn.onclick = () => {
+            const lettersStr = ($('adminPlateLetters').value || 'АМР').toUpperCase().slice(0, 3);
+            const letters = lettersStr.padEnd(3, 'А').split('');
+            const digitsStr = ($('adminPlateDigits').value || '777').slice(0, 3).replace(/[^0-9]/g, '0');
+            const regionStr = ($('adminPlateRegion').value || '97').slice(0, 3).replace(/[^0-9]/g, '9') || '97';
+
+            const l1 = GOST_LETTERS.includes(letters[0]) ? letters[0] : 'А';
+            const l2 = GOST_LETTERS.includes(letters[1]) ? letters[1] : 'В';
+            const l3 = GOST_LETTERS.includes(letters[2]) ? letters[2] : 'Е';
+
+            plateLetters = { letter1: l1, letter2: l2, letter3: l3 };
+            plateDigits = digitsStr.padStart(3, '0').slice(0, 3);
+            region = regionStr;
+            regionSelect.value = regionStr;
+            renderPlate();
+            saveUserState();
+            showToast('Номер создан!');
+            closeModal();
+        };
+        if (unlockBtn) unlockBtn.onclick = () => {
+            unlockedTypes = { auto: true, moto: true, spec: true, police: true, diplomat: true };
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('locked');
+                const lockIcon = b.querySelector('.lock-icon');
+                if (lockIcon) lockIcon.remove();
+            });
+            saveUserState();
+            showToast('🔓 Все типы разблокированы!');
+            closeModal();
+        };
+    }, 50);
+}
+
+/* ==================== TABS ==================== */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        if (tab === 'admin') { showAdmin(); return; }
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        closeModal();
+        if (tab === 'garage') showGarage();
+        else if (tab === 'market') showMarket();
+        else if (tab === 'online') showOnlineMarket();
+    });
+});
+
+/* ==================== TYPE SWITCHER ==================== */
+document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        trySelectType(btn.dataset.type);
+    });
+});
+
+/* ==================== REGION SELECT ==================== */
+regionSelect.addEventListener('change', () => {
+    if (regionLocked) {
+        showToast('Регион заблокирован во время спина!');
+        regionSelect.value = region;
+        return;
+    }
+    region = regionSelect.value;
+    regionNum.textContent = region;
+    if (isPlateComplete()) {
+        updatePlateStats();
+    }
+    saveUserState();
+});
+
+/* ==================== AUTH ==================== */
+const toggleLoginBtn = $('toggleLoginBtn');
+const toggleRegisterBtn = $('toggleRegisterBtn');
+const loginForm = $('loginForm');
+const registerForm = $('registerForm');
+const loginError = $('loginError');
+const registerError = $('registerError');
+
+toggleLoginBtn.addEventListener('click', () => {
+    toggleLoginBtn.classList.add('active');
+    toggleRegisterBtn.classList.remove('active');
+    loginForm.style.display = 'flex';
+    registerForm.style.display = 'none';
+    loginError.textContent = '';
+    registerError.textContent = '';
+});
+
+toggleRegisterBtn.addEventListener('click', () => {
+    toggleRegisterBtn.classList.add('active');
+    toggleLoginBtn.classList.remove('active');
+    registerForm.style.display = 'flex';
+    loginForm.style.display = 'none';
+    loginError.textContent = '';
+    registerError.textContent = '';
+});
+
+$('loginSubmitBtn').addEventListener('click', () => {
+    const username = $('loginUsername').value.trim();
+    const password = $('loginPassword').value;
+    loginError.textContent = '';
+    if (!username || !password) { loginError.textContent = 'Заполните все поля!'; return; }
+    const result = loginUser(username, password);
+    if (!result.ok) { loginError.textContent = result.error; return; }
+    loginSuccess(username);
+});
+
+$('registerSubmitBtn').addEventListener('click', () => {
+    const username = $('registerUsername').value.trim();
+    const password = $('registerPassword').value;
+    const passwordConfirm = $('registerPasswordConfirm').value;
+    registerError.textContent = '';
+    if (!username || !password) { registerError.textContent = 'Заполните все поля!'; return; }
+    if (username.length < 3) { registerError.textContent = 'Логин минимум 3 символа!'; return; }
+    if (password.length < 3) { registerError.textContent = 'Пароль минимум 3 символа!'; return; }
+    if (password !== passwordConfirm) { registerError.textContent = 'Пароли не совпадают!'; return; }
+    const result = registerUser(username, password);
+    if (!result.ok) { registerError.textContent = result.error; return; }
+    showToast('✅ Аккаунт создан!');
+    loginSuccess(username);
+});
+
+$('clearStorageBtn').addEventListener('click', () => {
+    if (confirm('Сбросить все данные игры? Это удалит все аккаунты и прогресс.')) {
+        localStorage.removeItem('blat_users');
+        ensureDefaultAdmin();
+        location.reload();
+    }
+});
+
+function loginSuccess(username) {
+    currentUser = username;
+    loadUserState(username);
+    usernameDisplay.textContent = username;
+    authScreen.classList.add('hidden');
+    updateBalanceUI();
+    updateLevelUI();
+
+    document.querySelectorAll('.type-btn').forEach(b => {
+        const t = b.dataset.type;
+        b.classList.toggle('active', t === currentType);
+        if (unlockedTypes[t]) {
+            b.classList.remove('locked');
+            const lockIcon = b.querySelector('.lock-icon');
+            if (lockIcon) lockIcon.remove();
+        } else {
+            b.classList.add('locked');
+            if (!b.querySelector('.lock-icon')) {
+                const lock = document.createElement('span');
+                lock.className = 'lock-icon';
+                lock.textContent = '🔒' + (VEHICLE_UNLOCK_COST[t] / 1000000) + 'M';
+                b.appendChild(lock);
+            }
+        }
+    });
+
+    regionSelect.value = region;
+    renderPlate();
+    updateBuffsUI();
+
+    if (username === ADMIN_USERNAME) {
+        adminTabBtn.style.display = 'flex';
+    } else {
+        adminTabBtn.style.display = 'none';
+    }
+
+    if (activeBuffs.sellActive && activeBuffs.sellTimer > 0) {
+        startSellTimer(activeBuffs.sellTimer);
+    }
+    saveUserState();
+    showToast('Добро пожаловать, ' + username + '!');
+}
+
+/* ==================== EVENT BINDINGS ==================== */
+spinDigitsBtn.onclick = spinDigits;
+spinLettersBtn.onclick = spinLetters;
+toGarageBtn.onclick = addToGarage;
+dumpGovBtn.onclick = dumpToState;
+
+closeModalBtn.onclick = closeModal;
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+});
+
+// Double-tap balance for admin
+let balanceTapCount = 0;
+let balanceTapTimer = null;
+balanceDisplay.addEventListener('click', () => {
+    balanceTapCount++;
+    if (balanceTapTimer) clearTimeout(balanceTapTimer);
+    balanceTapTimer = setTimeout(() => { balanceTapCount = 0; }, 400);
+    if (balanceTapCount >= 2) {
+        balanceTapCount = 0;
+        if (!currentUser) { showToast('Сначала войдите!'); return; }
+        currentUser = ADMIN_USERNAME;
+        usernameDisplay.textContent = ADMIN_USERNAME;
+        adminTabBtn.style.display = 'flex';
+        showToast('🔓 Админ-режим активирован!');
+        const db = getUsersDB();
+        if (!db[ADMIN_USERNAME]) ensureDefaultAdmin();
+        loadUserState(ADMIN_USERNAME);
+        updateBalanceUI();
+        updateLevelUI();
+        regionSelect.value = region;
+        renderPlate();
+        updateBuffsUI();
+    }
+});
+
+/* ==================== INIT ==================== */
+ensureDefaultAdmin();
+initNpcListings();
+renderPlate();
+regionSelect.value = region;
+toGarageBtn.disabled = true;
+dumpGovBtn.disabled = true;
+
+setInterval(saveUserState, 5000);
+window.addEventListener('beforeunload', saveUserState);
+
+})();
+</script>
+</body>
+</html>
